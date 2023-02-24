@@ -1,0 +1,1475 @@
+swagger: '2.0'
+info:
+  title: MindConnect API
+  description: |
+  
+    MindConnect API provides following data ingestion functionalities:
+    
+    # Data Point Mappings
+    
+    Creating and managing mappings between an agent's data points and an entity's dynamic property to be able to upload TimeSeries data.
+    
+    
+    Each agent has data points with unique ids. The mapping is between to this id to an entity's dynamic property set's property.
+    
+    - A data point can be mapped to many property of many property set of many
+    entities.
+    
+    - A property cannot be mapped from more than one data point. 
+    
+    - A propertyset can have mappings from many agents' many data points to its
+    properties.
+    
+    - The unit of the datapoint has to be same with the unit of the property.
+    
+    - The type of the datapoint has to be same with the type of the property.
+    
+    
+    Whenever data source configuration of an agent is updated via Agent Management API; all mappings with __keepMapping__ attribute set gets their validity attribute updated and all mappings with __keepMapping__ attribute unset are deleted.
+
+
+    # Exchange
+    
+    Exchanging time series, events, files and data source configuration data. Combination of different data types can be uploaded via exchange endpoint within  multipart body. Maximum size of exchange body is 10MBs.
+
+    # Diagnostic Activations
+    
+    Management of Diagnostic Activations and querying Diagnostic Messages of time series, event, file and data source configuration requests.
+
+    - Maximum 5 agents per tenant can be activated for data ingestion tracking.
+    
+    - For non-agents, the required permission allows to manage diagnostic activation resources of agents in the same tenant as in the token.
+    
+    - For agents, only the diagnostic activation related to the agent can be managed. Agents are forbidden to view/change the resources of other agents in the same tenant.
+    
+    - Agents are allowed to update activation for itself only. Users with sufficient scopes are allowed
+    
+  version: '3.5.0'
+  x-visibility: external
+    
+basePath: /api/mindconnect/v3
+schemes:
+  - https
+consumes:
+  - application/json
+produces:
+  - application/json
+tags:
+  - name: Mappings
+    description: Mapping Operations
+  - name: Exchange
+    description: Exchange Operations
+  - name: Diagnostic Activations
+    description: Diagnostic Activations Operations
+  - name: Record Recovery
+    description: Record Recovery Operations
+  - name: Diagnostic Information
+    description: Diagnostic Information Operations    
+
+securityDefinitions:
+  mappings:
+    type: oauth2
+    tokenUrl: 'http://authorization.connectivity.net/oauth/token'
+    flow: application
+    scopes:
+      map.c: Permission to create a mapping
+      map.r: Permission to read mapping(s).
+      map.d: Permission to delete a mapping   
+  exchange:
+    type: oauth2
+    tokenUrl: 'http://authorization.connectivity.net/oauth/token'
+    flow: application
+    scopes:
+      exc.w: Permission to exchange data.
+  diagnosticActivations:
+    type: oauth2
+    tokenUrl: 'http://authorization.connectivity.net/oauth/token'
+    flow: application
+    scopes:
+      da.c: Permission to create a diagnostic activation.
+      da.r: Permission to read a/all diagnostic activation.
+      da.u: Permission to update a diagnostic activation.
+      da.d: Permission to delete a diagnostic activation.
+      da.m.r: Permission to read a/all diagnostic messages of specific activation resource.      
+  diagnosticInformation:
+    type: oauth2
+    tokenUrl: 'http://authorization.connectivity.net/oauth/token'
+    flow: application
+    scopes:
+      di.r: Permission to read diagnostic information.
+  recordRecovery:
+    type: oauth2
+    tokenUrl: 'http://authorization.connectivity.net/oauth/token'
+    flow: application
+    scopes:
+      rec.c: Permission to replay recoverable record.
+      rec.r: Permission to read recoverable record.
+      rec.d: Permission to delete recoverable record.  
+paths:
+  /dataPointMappings:
+    post:
+      tags:
+        - Mappings
+      summary: Create single mapping
+      description: |
+        Creates a single mapping.
+      security:
+        - mappings:
+            - map.c
+      parameters:
+        - name: mapping
+          required: true
+          in: body
+          description: Object describing new mapping resource.
+          schema:
+            $ref: '#/definitions/Mapping'
+      responses:
+        '201':
+          description: Created
+          schema:
+            $ref: '#/definitions/Mapping'
+        '400':
+          description: Bad Request. Request validations failed.
+          schema:
+            $ref: '#/definitions/badrequest'
+        '401':
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/unauthorized'
+        '403':
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/forbidden' 
+        '409':
+          description: Conflict
+          schema:
+            $ref: '#/definitions/conflict'
+        default:
+          description: unexpected error
+          schema:
+            $ref: '#/definitions/error'
+    get:
+      tags:
+        - Mappings
+      summary: Get mappings.
+      description: |
+        Retrieves a list of mappings.
+      security:
+        - mappings:
+            - map.r
+      parameters:
+        - name: filter
+          in: query
+          description: Filter as JSON object.
+          required: false
+          type: string
+        - name: size
+          in: query
+          description: The maximum number of elements in a page.
+          required: false
+          type: integer
+          default: 20
+          format: int32
+        - name: page
+          in: query
+          description: The (0-based) index of page.
+          required: false
+          type: integer
+          default: 0
+          format: int32
+        - name: sort
+          in: query
+          description: |
+            The order of returned elements.
+            Multiple fields could be used separated by commas (e.g. ''field1,field2'').
+            Descending order could be requested by appending '',desc'' at the end of parameter.(e.g. ''field1,field2,desc'')'
+          required: false
+          type: string
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: '#/definitions/PagedMapping'
+        '400':
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/badrequest'
+        '401':
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/unauthorized'
+        '403':
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/forbidden'
+        default:
+          description: unexpected error
+          schema:
+            $ref: '#/definitions/error'     
+  /dataPointMappings/{id}:
+    get:
+      tags:
+        - Mappings
+      summary: Get a mapping by id
+      description: | 
+        Gets a mapping by given id.
+      security:
+        - mappings:
+            - map.r
+      parameters:
+      - name: id
+        in: path
+        type: string
+        required: true
+        description: Unique identifier of the mapping resource.
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: '#/definitions/Mapping'
+        '400':
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/badrequest'
+        '401':
+          description: unauthorized
+          schema:
+            $ref: '#/definitions/unauthorized'
+        '403':
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/forbidden'
+        '404':
+          description: Mapping not found
+          schema:
+            $ref: '#/definitions/notfound'
+        default:
+          description: unexpected error
+          schema:
+            $ref: '#/definitions/error'
+            
+    delete:
+      tags:
+        - Mappings
+      summary: Delete a mapping
+      description: |
+        Deletes a mapping.  
+      security:
+        - mappings:
+            - map.d
+      parameters:
+      - name: id
+        in: path
+        type: string
+        description: Unique identifier of the mapping resource.
+        required: true
+      responses:
+        '204':
+          description: Deleted
+        '400':
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/badrequest'
+        '401':
+          description: unauthorized
+          schema:
+            $ref: '#/definitions/unauthorized'
+        '403':
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/forbidden'       
+        '404':
+          description: Mapping not found
+          schema:
+            $ref: '#/definitions/notfound'
+        default:
+          description: unexpected error
+          schema:
+            $ref: '#/definitions/error'
+  /exchange:
+    post:
+      tags:
+        - Exchange
+      security:
+        - exchange: 
+          - exc.w
+      consumes:
+        - multipart/mixed
+      parameters:
+        - name: message
+          in: body
+          description: Multipart message.
+          required: true
+          schema:
+            type: string
+            format: binary
+      responses:
+        '200':
+          description: OK
+        '400':
+          description: 'bad request, e.g. multi part body is not well formatted.'
+          schema:
+            $ref: '#/definitions/badrequest'
+        '401':
+          description: unauthorized
+          schema:
+            $ref: '#/definitions/unauthorized'
+        '403':
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/forbidden'   
+        '413':
+          description: Payload Too Large
+          schema:
+            $ref: '#/definitions/payLoadTooLarge'
+        default:
+          description: unexpected error
+          schema:
+            $ref: '#/definitions/error' 
+  /diagnosticInformation:
+    get:
+      deprecated: true
+      description: |
+       This operation is deprecated! Use "/diagnosticActivations/{id}/messages" instead. 
+       Gets Diagnostic Information. 
+      tags:
+        - Diagnostic Information
+      summary: Get Diagnostic Information
+      security:
+        - diagnosticInformation:
+            - di.r
+      parameters:
+        - name: filter
+          in: query
+          description: |
+            JSON based filter. Diagnostic information can be filtered by the following fields
+             - `agentId`
+             - `correlationId`
+             - `message`
+             - `source`
+             - `timestamp`
+             - `severity`
+          required: false
+          type: string
+        - name: size
+          in: query
+          description: The maximum number of elements in a page.
+          required: false
+          type: integer
+          default: 20
+          format: int32
+        - name: page
+          in: query
+          description: The (0-based) index of page.
+          required: false
+          type: integer
+          default: 0
+          format: int32
+        - name: sort
+          in: query
+          description: |
+            The order of returned elements.
+            Multiple fields could be used separated by commas (e.g. ''field1,field2'').
+            Descending order could be requested by appending '',desc'' at the end of parameter.(e.g. ''field1,field2,desc'')'
+          required: false
+          type: string
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: '#/definitions/PagedDiagnosticInformation'
+        '400':
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/badrequest'
+        '401':
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/unauthorized'
+        '403':
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/forbidden'
+        default:
+          description: unexpected error
+          schema:
+            $ref: '#/definitions/error'
+  /diagnosticActivations:
+    post:
+      tags:
+        - Diagnostic Activations
+      summary: |
+        Creates a new diagnostic activation
+      description: |
+        Create a new diagnostic activation. 
+        Agents are allowed to create activation for itself only. Users with sufficient scopes are allowed to create activations of the agents in the same tenant as in the token.
+      security:
+        - diagnosticActivations:
+            - da.c
+      parameters:
+        - in: body
+          name: diagnosticActivation
+          description: Object describing new diagnostic activation resource.
+          required: true
+          schema:
+            $ref: '#/definitions/DiagnosticActivation'
+      responses:
+        '201':
+          description: Created
+          schema:
+            $ref: '#/definitions/DiagnosticActivation'
+        '400':
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/badrequest'
+        '401':
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/unauthorized'
+        '403':
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/forbidden'
+        '409':
+          description: Resource is already available.
+          schema:
+            $ref: '#/definitions/conflict'
+        default:
+          description: unexpected error
+          schema:
+            $ref: '#/definitions/error'
+    get:
+      tags:
+        - Diagnostic Activations
+      summary: |    
+        Gets diagnostic activations
+      description: |
+        Get diagnostic activations. Agents are allowed to get their own activation. Users with sufficient scopes are allowed to get all activations in the same tenant as in the token.
+      security:
+        - diagnosticActivations:
+            - da.r
+      parameters:
+        - name: size
+          in: query
+          description: The maximum number of elements in a page.
+          required: false
+          type: integer
+          default: 20
+          format: int32
+        - name: page
+          in: query
+          description: The (0-based) index of page.
+          required: false
+          type: integer
+          default: 0
+          format: int32
+        - name: sort
+          in: query
+          description: |
+            The order of returned elements.
+            Multiple fields could be used separated by commas (e.g. ''field1,field2'').
+            Descending order could be requested by appending '',desc'' at the end of parameter.(e.g. ''field1,field2,desc'')'
+          required: false
+          type: string
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: '#/definitions/PagedDiagnosticActivation'
+        '400':
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/badrequest'
+        '401':
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/unauthorized'
+        '403':
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/forbidden'
+        default:
+          description: unexpected error
+          schema:
+            $ref: '#/definitions/error'
+  /diagnosticActivations/{id}:
+    put:
+      tags:
+        - Diagnostic Activations
+      summary: |
+        Update status of Diagnostic Activation
+      description: |
+        Updates status of Diagnostic Activation.
+      security:
+        - diagnosticActivations:
+            - da.u
+      parameters:
+        - name: id
+          in: path
+          description: Unique identifier of diagnostic activation resource.
+          required: true
+          type: string
+          format: uuid      
+        - in: body
+          name: diagnosticActivationStatus
+          description: Object describing updated diagnostic activation status.
+          required: true
+          schema:
+            $ref: '#/definitions/DiagnosticActivationStatus'
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: '#/definitions/DiagnosticActivation'
+        '400':
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/badrequest'
+        '401':
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/unauthorized'
+        '403':
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/forbidden'
+        '404':
+          description: Not Found
+          schema:
+            $ref: '#/definitions/notfound'            
+        default:
+          description: unexpected error
+          schema:
+            $ref: '#/definitions/error'    
+    get:
+      tags:
+        - Diagnostic Activations
+      summary: | 
+        Gets a diagnostic activation.  
+      description: |
+        Get a diagnostic activation with given id.  Agents are allowed to get their own activation. Users with sufficient scopes are allowed to get any activation in the same tenant as in the token.  
+      security:
+        - diagnosticActivations:
+            - da.r
+      parameters:
+        - name: id
+          in: path
+          description: Unique identifier of diagnostic activation resource.
+          required: true
+          type: string
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: '#/definitions/DiagnosticActivation'
+        '400':
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/badrequest'
+        '401':
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/unauthorized'
+        '403':
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/forbidden'
+        '404':
+          description: Not Found
+          schema:
+            $ref: '#/definitions/notfound'
+        default:
+          description: unexpected error
+          schema:
+            $ref: '#/definitions/error'
+    delete:
+      tags:
+        - Diagnostic Activations
+      summary: |
+        Deletes a diagnostic activation
+      description: |
+         Delete a diagnostic activation. Agents are allowed to delete their own activation. Users with sufficient scopes are allowed to delete any activation in the same tenant as in the token.
+      security:
+        - diagnosticActivations:
+            - da.d
+      parameters:
+        - name: id
+          in: path
+          description: Unique identifier of diagnostic activation resource.
+          required: true
+          type: string
+      responses:
+        '204':
+          description: No Content
+        '400':
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/badrequest'
+        '401':
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/unauthorized'
+        '403':
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/forbidden'
+        '404':
+          description: Not Found
+          schema:
+            $ref: '#/definitions/notfound'
+        default:
+          description: unexpected error
+          schema:
+            $ref: '#/definitions/error'
+  /diagnosticActivations/{id}/messages:
+    get:
+      tags:
+        - Diagnostic Activations
+      summary: |
+        Get a diagnostic messages of specific activation resource
+      description: |
+        Get a diagnostic messages of specific activation resource. Agents are allowed to get their own activations' messages. Users with sufficient scopes are allowed to get any activations messages in the same tenant as in the token.  
+      security:
+        - diagnosticActivations:
+            - da.m.r
+      parameters:
+        - name: id
+          in: path
+          description: Unique identifier of diagnostic activation resource.
+          required: true
+          type: string
+        - name: filter
+          in: query
+          description: |
+            JSON based filter. Diagnostic messages can be filtered by the following fields
+             - `correlationId`
+             - `message`
+             - `source`
+             - `timestamp`
+             - `severity`
+          required: false
+          type: string
+        - name: size
+          in: query
+          description: The maximum number of elements in a page.
+          required: false
+          type: integer
+          default: 20
+          format: int32
+        - name: page
+          in: query
+          description: The (0-based) index of page.
+          required: false
+          type: integer
+          default: 0
+          format: int32
+        - name: sort
+          in: query
+          description: |
+            The order of returned elements.
+            Multiple fields could be used separated by commas (e.g. ''field1,field2'').
+            Descending order could be requested by appending '',desc'' at the end of parameter.(e.g. ''field1,field2,desc'')'
+          required: false
+          type: string
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: '#/definitions/PagedDiagnosticInformationMessages'
+        '400':
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/badrequest'
+        '401':
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/unauthorized'
+        '403':
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/forbidden'
+        '404':
+          description: Not Found
+          schema:
+            $ref: '#/definitions/notfound'
+        default:
+          description: unexpected error
+          schema:
+            $ref: '#/definitions/error'            
+  /recoverableRecords/{id}/replay:
+    post:
+      tags:
+        - Record Recovery
+      summary: Re-play a recoverable record
+      description: |
+        Re-play a recoverable record.  
+      security:
+        - recordRecovery:
+            - rec.c
+      parameters:
+      - name: id
+        in: path
+        type: string
+        required: true
+        description: Unique identifier of the recoverable record.    
+      responses:
+        '200':
+          description: OK
+        '400':
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/badrequest'
+        '401':
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/unauthorized'
+        '403':
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/forbidden'
+        '404':
+          description: Not Found
+          schema:
+            $ref: '#/definitions/notfound'
+        default:
+          description: unexpected error
+          schema:
+            $ref: '#/definitions/error'     
+  /recoverableRecords/{id}/downloadLink:
+    get:
+      tags:
+        - Record Recovery
+      summary: Get download link of record payload.
+      description: |
+        Gets download link of record payload
+      security:
+        - recordRecovery:
+            - rec.r
+      parameters:
+        - name: id
+          in: path
+          description: Unique identifier of the recoverable record.
+          required: true
+          type: string
+          format: uuid
+      responses:
+        '200':
+          description: OK
+          schema:
+            type: string
+            example: 'https://bucketname-s3.eu-central-1.amazonaws.com/c9bcd-44ab-4cfa-a87e-d81e727d9af4?X'
+            format: uri
+        '400':
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/badrequest'
+        '401':
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/unauthorized'
+        '403':
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/forbidden'
+        '404':
+          description: Not Found
+          schema:
+            $ref: '#/definitions/notfound'
+        default:
+          description: unexpected error
+          schema:
+            $ref: '#/definitions/error'            
+  /recoverableRecords/{id}:
+    delete:
+      tags:
+        - Record Recovery
+      summary: Delete a recoverable record
+      description: |
+        Deletes a recoverable record.  
+      security:
+        - recordRecovery:
+            - rec.d
+      parameters:
+      - name: id
+        in: path
+        type: string
+        required: true
+        description: Unique identifier of the recoverable record.    
+      responses:
+        '204':
+          description: Deleted
+        '400':
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/badrequest'
+        '401':
+          description: unauthorized
+          schema:
+            $ref: '#/definitions/unauthorized'
+        '403':
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/forbidden'       
+        '404':
+          description: Recoverable record not found
+          schema:
+            $ref: '#/definitions/notfound'
+        default:
+          description: unexpected error
+          schema:
+            $ref: '#/definitions/error'                
+  /recoverableRecords:            
+    get:
+      tags:
+        - Record Recovery
+      summary: Get all recoverable records
+      description: | 
+        Gets all recoverable records
+      security:
+        - recordRecovery:
+            - rec.r
+      parameters:
+        - name: filter
+          in: query
+          description: JSON based filter.
+          required: false
+          type: string
+        - name: size
+          in: query
+          description: The maximum number of elements in a page.
+          required: false
+          type: integer
+          default: 20
+          format: int32
+        - name: page
+          in: query
+          description: The (0-based) index of page.
+          required: false
+          type: integer
+          default: 0
+          format: int32
+        - name: sort
+          in: query
+          description: |
+            The order of returned elements.
+            Multiple fields could be used separated by commas (e.g. ''field1,field2'').
+            Descending order could be requested by appending '',desc'' at the end of parameter.(e.g. ''field1,field2,desc'')'
+          required: false
+          type: string
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: '#/definitions/PagedRecoverableRecords'
+        '400':
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/badrequest'
+        '401':
+          description: unauthorized
+          schema:
+            $ref: '#/definitions/unauthorized'
+        '403':
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/forbidden'
+        default:
+          description: unexpected error
+          schema:
+            $ref: '#/definitions/error'            
+definitions:
+  Mapping:
+    required: [agentId, dataPointId, entityId, propertySetName, propertyName]
+    type: object
+    properties:
+      id:
+        type: string
+        format: uuid
+        readOnly: true
+        example: '4fad6258-5def-4d84-a4c2-1481b209c116'
+        maxLength: 36
+        description: Unique identifier of the mapping resource
+      agentId:
+        type: string
+        format: uuid
+        example: '11961bc396cd4a87a9b26b723f5b7ba0'
+        description: Unique identifier of the agent
+        maxLength: 36
+      dataPointId:
+        type: string
+        example: 'DP0001'
+        maxLength: 36
+        description: Unique identifier of the data point
+      dataPointUnit:
+        type: string
+        readOnly: true
+        example: '%'
+        maxLength: 32
+        description: Unit of the data point
+      dataPointType:
+        type: string
+        readOnly: true
+        enum:
+          - INT
+          - LONG
+          - DOUBLE
+          - BOOLEAN
+          - STRING
+          - BIG_STRING
+          - TIMESTAMP
+        description: Type of the data point
+      entityId:
+        type: string
+        format: uuid
+        example: '83e78008eadf453bae4f5c7bef3db550'
+        maxLength: 36
+        description: Unique identifier of the entity
+      propertySetName:
+        type: string
+        example: 'ElectricalProperties'
+        maxLength: 256
+      propertyName:
+        type: string
+        example: "Voltage"
+        maxLength: 256
+      propertyUnit:
+        type: string
+        example: '%'
+        maxLength: 32
+        readOnly: true
+      propertyType:
+        type: string
+        readOnly: true
+        enum:
+          - INT
+          - LONG
+          - DOUBLE
+          - BOOLEAN
+          - STRING
+          - BIG_STRING
+          - TIMESTAMP
+      qualityEnabled:
+        type: boolean
+        readOnly: true
+      keepMapping:
+        type: boolean
+        example: false
+        default: false
+        description: Identifies auto deleting mapping or keeping mapping. 
+      validity:
+        readOnly: true
+        allOf:
+          - $ref: '#/definitions/Validity'
+
+  Validity:
+    type: object
+    required:
+      - status
+      - reasons
+    properties:
+      status:
+        type: string
+        enum:
+        - VALID
+        - INVALID
+        example: INVALID
+      reasons:
+        type: array
+        items:
+          type: string
+          enum: 
+          - MISSING_DATAPOINT
+          - MISSING_PROPERTY
+          - INVALID_TYPE
+          - INVALID_UNIT
+        example: [MISSING_DATAPOINT]
+    
+  PagedMapping:
+    type: object
+    required:
+      - content
+      - totalPages
+      - totalElements
+      - last
+      - numberOfElements
+      - first
+      - sort
+      - size
+      - number
+    properties:
+      content:
+        type: array
+        items:
+          $ref: '#/definitions/Mapping'
+      last:
+        description: Whether the current item is the last one.
+        type: boolean
+        example: true
+      totalPages:
+        description: The number of total pages.
+        type: integer
+        example: 1
+      totalElements:
+        description: The total amount of elements.
+        type: integer
+        example: 1
+      numberOfElements:
+        description: The number of elements currently on this page.
+        type: integer
+        example: 1
+      first:
+        description: Whether the current item is the first one.
+        type: boolean
+        example: true
+      sort:
+        description: The sorting parameters for the page.
+        type: array
+        items:
+          $ref: '#/definitions/Order'
+        example: null
+      size:
+        description: The size of the page.
+        type: integer
+        example: 20
+      number:
+        description: The number of the current item.
+        type: integer
+        example: 0
+  Order:
+    type: object
+    properties:
+      direction:
+        description: The order the property shall be sorted for.
+        type: string
+        enum:
+          - ASC
+          - DESC
+      property:
+        description: The property to order for.
+        type: string
+      ignoreCase:
+        description: Whether or not the sort will be case sensitive.
+        type: boolean
+      nullHandling:
+        type: string
+        enum:
+          - NATIVE
+          - NULLS_FIRST
+          - NULLS_LAST
+      descending:
+        description: Whether sorting for this property shall be descending.
+        type: boolean
+      ascending:
+        description: Whether sorting for this property shall be ascending.
+        type: boolean
+  DiagnosticActivation:
+    type: object
+    required:
+      - agentId
+    properties:
+      id:
+        type: string
+        description: Unique identifier of diagnostic activation resource
+        readOnly: true
+        maxLength: 36
+        example: '8f273818-e975-11e8-9f32-f2801f1b9fd1'
+      agentId:
+        type: string
+        description: Unique identifier of the agent
+        maxLength: 36
+        example: '3b27818ea09a46b48c7eb3fbd878349f'
+      status:
+        type: string
+        enum:
+          - ACTIVE
+          - INACTIVE
+        description: Status of the activation
+        example : 'ACTIVE'
+  DiagnosticActivationStatus:
+    type: object
+    required:
+      - agentId
+    properties:
+      status:
+        type: string
+        enum:
+          - ACTIVE
+          - INACTIVE
+        description: Status of the activation
+        example : 'ACTIVE'        
+  DiagnosticInformation:
+    type: object
+    properties:
+      agentId:
+        type: string
+        maxLength: 36
+        example: '3b27818ea09a46b48c7eb3fbd878349f'
+      correlationId:
+        type: string
+        maxLength: 36
+        example: '3fcf2a5ecc7611e7abc4cec278b6b50a'
+      severity:
+        type: string
+        enum:
+          - INFO
+          - WARN
+          - ERROR
+      message:
+        type: string  
+        maxLength: 4096
+        example: '[Finished] TimeSeries upload completed, <1> samplings and <1> properties in <1> requests>. <0> values are dropped.'
+      source:
+        type: string
+        example: 'TIMESERIES'
+        description: Source of diagnostic information.
+      state:
+        type: string
+        enum:
+          - ACCEPTED
+          - RETRYING
+          - DROPPED
+          - PROCESSING
+          - FINISHED
+        description: State of diagnostic information.   
+      timestamp:
+        type: string
+        example: '2018-08-27T16:40:11.235Z'
+        format: date-time
+        description: Diagnostic information creation date.
+  DiagnosticInformationMessage:
+    type: object
+    properties:
+      correlationId:
+        type: string
+        maxLength: 36
+        example: '3fcf2a5ecc7611e7abc4cec278b6b50a'
+      severity:
+        type: string
+        enum:
+          - INFO
+          - WARN
+          - ERROR
+      message:
+        type: string  
+        maxLength: 4096
+        example: '[Finished] TimeSeries upload completed, <1> samplings and <1> properties in <1> requests>. <0> values are dropped.'
+      source:
+        type: string
+        example: 'TIMESERIES'
+        description: Source of diagnostic information.
+      state:
+        type: string
+        enum:
+          - ACCEPTED
+          - RETRYING
+          - DROPPED
+          - PROCESSING
+          - FINISHED
+        description: State of diagnostic information.   
+      timestamp:
+        type: string
+        example: '2018-08-27T16:40:11.235Z'
+        format: date-time
+        description: Diagnostic information creation date.        
+  PagedDiagnosticActivation:
+    type: object
+    required:
+      - content
+      - totalPages
+      - totalElements
+      - last
+      - numberOfElements
+      - first
+      - sort
+      - size
+      - number
+    properties:
+      content:
+        type: array
+        items:
+          $ref: '#/definitions/DiagnosticActivation'
+      last:
+        description: Whether the current item is the last one.
+        type: boolean
+        example: true
+      totalPages:
+        description: The number of total pages.
+        type: integer
+        example: 1
+      totalElements:
+        description: The total amount of elements.
+        type: integer
+        example: 1
+      numberOfElements:
+        description: The number of elements currently on this page.
+        type: integer
+        example: 1
+      first:
+        description: Whether the current item is the first one.
+        type: boolean
+        example: true
+      sort:
+        description: The sorting parameters for the page.
+        type: array
+        items:
+          $ref: '#/definitions/Order'
+        example: null
+      size:
+        description: The size of the page.
+        type: integer
+        example: 20
+      number:
+        description: The number of the current item.
+        type: integer
+        example: 0
+  PagedDiagnosticInformation:
+    type: object
+    required:
+      - content
+      - totalPages
+      - totalElements
+      - last
+      - numberOfElements
+      - first
+      - sort
+      - size
+      - number
+    properties:
+      content:
+        type: array
+        items:
+          $ref: '#/definitions/DiagnosticInformation'
+      last:
+        description: Whether the current item is the last one.
+        type: boolean
+        example: true
+      totalPages:
+        description: The number of total pages.
+        type: integer
+        example: 1
+      totalElements:
+        description: The total amount of elements.
+        type: integer
+        example: 1
+      numberOfElements:
+        description: The number of elements currently on this page.
+        type: integer
+        example: 1
+      first:
+        description: Whether the current item is the first one.
+        type: boolean
+        example: true
+      sort:
+        description: The sorting parameters for the page.
+        type: array
+        items:
+          $ref: '#/definitions/Order'
+        example: null
+      size:
+        description: The size of the page.
+        type: integer
+        example: 20
+      number:
+        description: The number of the current item.
+        type: integer
+        example: 0      
+  PagedDiagnosticInformationMessages:
+    type: object
+    required:
+      - content
+      - totalPages
+      - totalElements
+      - last
+      - numberOfElements
+      - first
+      - sort
+      - size
+      - number
+    properties:
+      content:
+        type: array
+        items:
+          $ref: '#/definitions/DiagnosticInformationMessage'
+      last:
+        description: Whether the current item is the last one.
+        type: boolean
+        example: true
+      totalPages:
+        description: The number of total pages.
+        type: integer
+        example: 1
+      totalElements:
+        description: The total amount of elements.
+        type: integer
+        example: 1
+      numberOfElements:
+        description: The number of elements currently on this page.
+        type: integer
+        example: 1
+      first:
+        description: Whether the current item is the first one.
+        type: boolean
+        example: true
+      sort:
+        description: The sorting parameters for the page.
+        type: array
+        items:
+          $ref: '#/definitions/Order'
+        example: null
+      size:
+        description: The size of the page.
+        type: integer
+        example: 20
+      number:
+        description: The number of the current item.
+        type: integer
+        example: 0              
+  RecoverableRecords:
+    type: object
+    properties:
+      id:
+        type: string
+        format: uuid
+        readOnly: true
+        example: '4fad6258-5def-4d84-a4c2-1481b209c116'
+        maxLength: 36
+        description: Unique identifier of the record
+      correlationId:
+        type: string
+        format: uuid
+        readOnly: true
+        example: '7had568-5def-4d84-a4c2-1481b209c116'
+        maxLength: 36
+        description: Unique identifier of the record   
+      agentId:
+        type: string
+        format: string
+        readOnly: true
+        example: '33238f98784711e8adc0fa7ae01bbebc'
+        maxLength: 36
+        description: agentId
+      requestTime:
+        type: string
+        example: '2018-08-27T16:40:11.235Z'
+        format: date-time
+        description: Ingestion date of the data.
+      dropReason:
+        type: string
+        format: string
+        readOnly: true
+        example: ' <[Dropped] TimeSeries Data is dropped. Validation failed for reason <Pre-processing of <153000> data points ended with <60600> valid and <92400> dropped data points. Following issues found: Data point with no mapping count is <92400>, including <[variable101, variable102, variable103, variable104, variable105, variable106, variable107, variable108, variable109, variable110]>.>>'
+        maxLength: 1024
+        description: Drop reason of data
+  PagedRecoverableRecords:
+    type: object
+    required:
+      - content
+      - totalPages
+      - totalElements
+      - last
+      - numberOfElements
+      - first
+      - sort
+      - size
+      - number
+    properties:
+      content:
+        type: array
+        items:
+          $ref: '#/definitions/RecoverableRecords'
+      last:
+        description: Whether the current item is the last one.
+        type: boolean
+        example: true
+      totalPages:
+        description: The number of total pages.
+        type: integer
+        example: 1
+      totalElements:
+        description: The total amount of elements.
+        type: integer
+        example: 1
+      numberOfElements:
+        description: The number of elements currently on this page.
+        type: integer
+        example: 1
+      first:
+        description: Whether the current item is the first one.
+        type: boolean
+        example: true
+      sort:
+        description: The sorting parameters for the page.
+        type: array
+        items:
+          $ref: '#/definitions/Order'
+        example: null
+      size:
+        description: The size of the page.
+        type: integer
+        example: 20
+      number:
+        description: The number of the current item.
+        type: integer
+        example: 0        
+  unauthorized:
+    type: object
+    properties:
+      id:
+        type: string
+        format: uuid
+      message:
+        type: string
+        example: Not authorized to access this resource.
+  badrequest:
+    type: object
+    properties:
+      id:
+        type: string
+        format: uuid
+      message:
+        type: string
+        example: The request is not valid.
+  forbidden:
+    type: object
+    properties:
+      id:
+        type: string
+        format: uuid
+      message:
+        type: string
+        example: Insufficient authorization for this resource.
+  payLoadTooLarge:
+    type: object
+    properties:
+      id:
+        type: string
+        format: uuid
+      message:
+        type: string
+        example: The request is too large.
+  notfound:
+    type: object
+    properties:
+      id:
+        type: string
+        format: uuid
+      message:
+        type: string
+        example: Resource not found.
+  conflict:
+    type: object
+    properties:
+      id:
+        type: string
+        format: uuid
+      message:
+        type: string
+        example: A newer resource version is available.
+  error:
+    type: object
+    properties:
+      id:
+        type: string
+        format: uuid
+      message:
+        type: string
