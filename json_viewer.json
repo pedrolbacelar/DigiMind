@@ -1,0 +1,18 @@
+[
+    {
+        "activity_type": "started",
+        "machine_id": "machine_1",
+        "part_id": "100",
+        "_time": "2023-02-20T02:01:01.001Z",
+        "queue": "queue 1",
+        "timestamp": "2023-02-20T02:01:01.001Z"
+    },
+    {
+        "activity_type": "finished",
+        "machine_id": "machine_1",
+        "part_id": "100",
+        "_time": "2023-02-20T02:02:01.001Z",
+        "queue": "queue 1",
+        "timestamp": "2023-02-20T02:02:01.001Z"
+    }
+]
