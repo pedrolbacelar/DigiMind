@@ -1,0 +1,122 @@
+{
+    "_embedded": {
+        "aspects": [
+            {
+                "name": "connectivityStatus",
+                "aspectId": "connectivityStatus",
+                "holderAssetId": "60bf86d1d051416f853b1e22f3714b8c",
+                "aspectTypeId": "core.connectivitystatus",
+                "aspectTypeName": "ConnectivityStatus",
+                "category": "static",
+                "description": "Latest Mindsphere connectivity state of an asset.",
+                "variables": [
+                    {
+                        "name": "connected",
+                        "dataType": "BOOLEAN",
+                        "unit": null,
+                        "searchable": true,
+                        "length": null,
+                        "qualityCode": false,
+                        "defaultValue": "false"
+                    },
+                    {
+                        "name": "lastUpdated",
+                        "dataType": "TIMESTAMP",
+                        "unit": null,
+                        "searchable": false,
+                        "length": null,
+                        "qualityCode": false,
+                        "defaultValue": null
+                    }
+                ]
+            },
+            {
+                "name": "real_log",
+                "aspectId": "69963cc5a769453c8fff76a470d15606",
+                "holderAssetId": "60bf86d1d051416f853b1e22f3714b8c",
+                "aspectTypeId": "iiotuxpc.real_log",
+                "aspectTypeName": "real_log",
+                "category": "dynamic",
+                "description": "",
+                "variables": [
+                    {
+                        "name": "activity_type",
+                        "dataType": "STRING",
+                        "unit": null,
+                        "searchable": false,
+                        "length": 100,
+                        "qualityCode": true,
+                        "defaultValue": null
+                    },
+                    {
+                        "name": "machine_id",
+                        "dataType": "STRING",
+                        "unit": null,
+                        "searchable": false,
+                        "length": 100,
+                        "qualityCode": true,
+                        "defaultValue": null
+                    },
+                    {
+                        "name": "part_id",
+                        "dataType": "STRING",
+                        "unit": null,
+                        "searchable": false,
+                        "length": 100,
+                        "qualityCode": true,
+                        "defaultValue": null
+                    },
+                    {
+                        "name": "queue",
+                        "dataType": "STRING",
+                        "unit": null,
+                        "searchable": false,
+                        "length": 100,
+                        "qualityCode": true,
+                        "defaultValue": null
+                    },
+                    {
+                        "name": "timestamp",
+                        "dataType": "TIMESTAMP",
+                        "unit": null,
+                        "searchable": false,
+                        "length": null,
+                        "qualityCode": true,
+                        "defaultValue": null
+                    }
+                ]
+            },
+            {
+                "name": "status",
+                "aspectId": "status",
+                "holderAssetId": "60bf86d1d051416f853b1e22f3714b8c",
+                "aspectTypeId": "core.agentstatus",
+                "aspectTypeName": "AgentOnlineStatus",
+                "category": "dynamic",
+                "description": "Online status of an agent typed asset.",
+                "variables": [
+                    {
+                        "name": "onlineStatus",
+                        "dataType": "BOOLEAN",
+                        "unit": null,
+                        "searchable": false,
+                        "length": null,
+                        "qualityCode": false,
+                        "defaultValue": null
+                    }
+                ]
+            }
+        ]
+    },
+    "_links": {
+        "self": {
+            "href": "https://gateway.eu1.mindsphere.io/api/assetmanagement/v3/assets/60bf86d1d051416f853b1e22f3714b8c/aspects?page=0&size=10&sort=name,asc"
+        }
+    },
+    "page": {
+        "size": 10,
+        "totalElements": 3,
+        "totalPages": 1,
+        "number": 0
+    }
+}

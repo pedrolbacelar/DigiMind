@@ -1,0 +1,82 @@
+# DigiMind
+
+## Higher level understading
+- mindsphere dashboard triggers APK by a PUT/POST method with Part ID as payload
+- APK calls ML function to predict RCT
+- ML function caculates and PUTs data in real time to MindSPhere timeseries database
+- Visual flow creator retrives the data from database and displays it on the dashboard
+
+## Targets
+- update ML accuracy indicators on dashboard.
+  - 'Indicator' aspect
+  - with n number of variables
+  - presented as gauges between 0 and 1
+  - with appropriate colour coding
+  - FLOAT
+- send part id to apk
+  - Text: Part ID
+  - value send: 'Part 1'
+  - text_payload by API call
+  - calculate button near the text prompt
+  - calculate button needs an appropriate name (ex: send, calculate)
+- display RCT on dashboard
+  - unit: seconds
+  - updates to most recent value in dashboard
+  - defined as an aspect 'RCT'
+  - variable a. Remaining_Cycle_Time (INTEGER), b. Part_ID (STRING)
+  - Last value:
+    - INTEGER
+    - updates in a text box
+  - Plot:
+    - updates in real time from timeseries database
+    - single line graph
+    - four data points expected
+- display zone level data
+  - defined as an aspect called 'Zone'
+  - write directly to mindsphere database
+  - part position and queue occupations wrote on databse as a single aspect simultaneously
+  - display part position:
+    - defined as a variable Position
+    - position to be recieved as a number of the station
+    - INTEGER
+    - conditional LEDs which turns green from orange when the part arrives at a station
+  - display last value of queue occupation:
+    - defined as n variables based on number of queue
+    - INTEGER
+  - plot queue occupation
+    - n number of plots
+    - updates in real time from timeseries database
+- further possibilities on dashboard
+  - cancel button to stop calculating (so that a next part id can be calculated)
+- a python script for the APK
+  - uses a public access url
+  - always listens to the dashboard
+  - receives part id
+  - calls ML function and passes part id
+  - returns positive feedback to the dashboard
+  - python script is kept alive by the apk loop itself
+  - possibility of interrupting ML function by API call from dashboard
+- interfaceAPI
+  - API calls to write to mindsphere
+  - dictionary format
+  - follow the time format required for '_time_' variable
+  - generate bearer token every 1700 seconds
+  - get assets and aspects id whenever required. possibility of hard coding the asset id.
+
+## Assets and Aspects
+- asset name: DigiMind
+  - Description: DigiMind is a machine learning based reaming cycle time predictor for parts in a production system.
+- asset_type: DigiMind
+  - Description: DigiMind asset type used for the DigiMind asset.
+- aspects count: 3
+- aspects list:
+  - Indicator
+    - Description: Indicates accuracy of the Machine Learning based Remaining Cycle Time prediction engine.
+  - RCT
+    - Description: Remaining cycle time predicted for the given part ID across machines.
+  - Zone
+    - Description: Data of selected part position in the machine and the overall queue occupation across the machines.
+- variables list:
+  - Indicator: n indicators FLOAT
+  - RCT: Remaining_Cycle_Time INTEGER, Part_ID STRING
+  - Zone: Position INTEGER, Queue_, Queue_2, Queue_3, Queue_4 INTEGER
