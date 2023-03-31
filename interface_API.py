@@ -173,7 +173,8 @@ class interfaceAPI():
             "Queue_1" : data[1],
             "Queue_2" : data[2],
             "Queue_3" : data[3],
-            "Queue_4" : data[4]
+            "Queue_4" : data[4],
+            "Queue_5" : data[5]
             }
         ])
         self.token_check()
