@@ -16,7 +16,6 @@ from interface_API import interfaceAPI
 
 #--- variables and flags
 localhost = "127.0.0.1"
-myip = "192.168.0.50"
 RCT_flag = False
 
 def on_connect(client, userdata, flags, rc):
