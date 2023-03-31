@@ -199,6 +199,7 @@ client.loop_start()
 
 try:
     while True:
+        sleep(1)
         if RCT_flag == True:
             int_part_id = int(part_id)
             part_of_interest_id = int_part_id
@@ -209,9 +210,12 @@ try:
             json_initial = "./models/initial.json"
             part_of_interest_current_position, part_of_interest_current_queue, queues_initial_conditions, _, rct_ML = collect_features(json_initial,part_of_interest_id)
             #Send this data to the mindsphere
-            api.Indicator([0,0.94])
-            api.RCT([str(part_of_interest_id),round(rct_ML)])
-            api.Zone([part_of_interest_current_queue]+queues_initial_conditions)
+            try:
+                api.Indicator([0,0.94])
+                api.RCT([str(part_of_interest_id),round(rct_ML)])
+                api.Zone([part_of_interest_current_queue]+queues_initial_conditions)
+            except:
+                print("API failed")
             print(part_of_interest_current_position, part_of_interest_current_queue, queues_initial_conditions, rct_ML)
 
             #Sleep for a specific amount of time
@@ -233,10 +237,13 @@ try:
                     i += 1
                 if check_piece == True:
                     #Send the data to mindsphere
-                    print(part_of_interest_current_position, part_of_interest_current_queue, queues_initial_conditions, rct_ML)
-                    api.Indicator([0,0.94])
-                    api.RCT([str(part_of_interest_id),round(rct_ML)])
-                    api.Zone([part_of_interest_current_queue]+queues_initial_conditions)
+                    print(part_of_interest_id ,part_of_interest_current_position, part_of_interest_current_queue, queues_initial_conditions, rct_ML)
+                    try:
+                        api.Indicator([0,0.94])
+                        api.RCT([str(part_of_interest_id),round(rct_ML)])
+                        api.Zone([part_of_interest_current_queue]+queues_initial_conditions)
+                    except:
+                        print("API failed")
                 time.sleep(json_step*3)
                 i += json_step
             RCT_flag = False
