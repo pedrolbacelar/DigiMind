@@ -1,7 +1,9 @@
 import paho.mqtt.client as mqtt
 from time import sleep
+from main_ML import *
 
 #--- variables and flags
+localhost = "127.0.0.1"
 myip = "192.168.0.50"
 RCT_flag = False
 
@@ -27,7 +29,7 @@ def on_message(client, userdata, msg):
 
 
 client = mqtt.Client()
-client.connect(myip,1883,60) # verify the IP address before connect
+client.connect(localhost,1883,60) # verify the IP address before connect
 client.on_connect = on_connect
 client.on_message = on_message
 
@@ -38,17 +40,10 @@ try:
         sleep(1)
         if RCT_flag == True:
             print(f"\33[32m----------------- Predicting RCT for {part_id} -----------------\33[0m")
+            int_part_id = int(part_id)
+            main(part_id)
             x = 0
             wait = 20
-            while  x<wait:
-                if RCT_flag == True:
-                    print(f"[predicting] Time done {x}s ...")
-                    x +=1
-                    sleep(1)
-                else:
-                    print("---------- Prediction canceled ----------")
-                    break
-            
             print("Waiting for next request ...")
             RCT_flag = False
 except KeyboardInterrupt:

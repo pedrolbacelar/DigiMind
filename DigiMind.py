@@ -6,7 +6,7 @@ from flask_ngrok import run_with_ngrok
 import paho.mqtt.client as mqtt
 
 #-- defining variables
-myip = "192.168.0.50"
+localhost = "127.0.0.1"
 
 #--- defining the App
 DigiMind = Flask(__name__)
@@ -46,7 +46,7 @@ def handle_put_request():
     return response, 200
 
 client = mqtt.Client()
-client.connect(myip, 1883,60) # verify the IP address before connect
+client.connect(localhost, 1883,60) # verify the IP address before connect
 client.on_connect = on_connect
 client.on_message = on_message
 
