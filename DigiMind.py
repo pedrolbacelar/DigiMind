@@ -4,7 +4,9 @@ import json
 from time import sleep
 from flask_ngrok import run_with_ngrok
 import paho.mqtt.client as mqtt
+from pyngrok import ngrok
 
+ngrok.set_auth_token('your-auth-token')
 #-- defining variables
 localhost = "127.0.0.1"
 
