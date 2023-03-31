@@ -38,6 +38,7 @@ client.loop_start()
 try:
     while True:
         sleep(1)
+        
         if RCT_flag == True:
             print(f"\33[32m----------------- Predicting RCT for {part_id} -----------------\33[0m")
             int_part_id = int(part_id)

@@ -6,7 +6,7 @@ from flask_ngrok import run_with_ngrok
 import paho.mqtt.client as mqtt
 from pyngrok import ngrok
 
-ngrok.set_auth_token('your-auth-token')
+ngrok.set_auth_token('2MHYJe6ObiVM3q4hbOmgk5IyKwG_4cTEw6ZB8axnF25ygE9zx')
 #-- defining variables
 localhost = "127.0.0.1"
 

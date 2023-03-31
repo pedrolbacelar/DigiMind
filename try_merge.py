@@ -200,6 +200,8 @@ client.loop_start()
 try:
     while True:
         if RCT_flag == True:
+            int_part_id = int(part_id)
+            part_of_interest_id = int_part_id
             json_step = 1
             api = interfaceAPI()
 
