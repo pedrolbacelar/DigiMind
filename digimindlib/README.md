@@ -1,0 +1,3 @@
+DigiMind - Remaing Cycle Time Predictor
+
+DigiMind is a library developed by master students from Politecnico di Milano for the challenge of MindSphere 2023. DigiMind is a remaining cycle time predictor for production system. According to a trained model, DigiMind is capable to predict the RCT for a given part id and for given scenario of the production system. For more details, get in touch with the author or join the GitHub community: https://github.com/pedrolbacelar/DigiMind

@@ -1,0 +1,10 @@
+paho-mqtt
+pandas
+ydata-profiling
+scikit-learn
+joblib
+Flask
+flask-ngrok
+matplotlib
+numpy
+pyngrok

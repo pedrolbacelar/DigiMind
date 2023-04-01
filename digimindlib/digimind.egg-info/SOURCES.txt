@@ -1,0 +1,11 @@
+README.md
+setup.py
+digimind/Digimind_app.py
+digimind/Digimind_main.py
+digimind/__init__.py
+digimind/interface_API.py
+digimind/test.py
+digimind.egg-info/PKG-INFO
+digimind.egg-info/SOURCES.txt
+digimind.egg-info/dependency_links.txt
+digimind.egg-info/top_level.txt
